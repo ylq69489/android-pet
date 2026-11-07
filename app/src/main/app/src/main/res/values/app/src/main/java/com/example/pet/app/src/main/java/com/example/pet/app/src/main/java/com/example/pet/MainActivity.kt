@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.widget.Button
 import android.widget.LinearLayout
+import android.widget.TextView
 
 class MainActivity : Activity() {
 
@@ -25,21 +26,32 @@ class MainActivity : Activity() {
             text = "启动桌宠"
         }
 
+        val errorText = TextView(this).apply {
+            textSize = 12f
+            setTextColor(android.graphics.Color.RED)
+            setPadding(0, 24, 0, 0)
+        }
+
         startButton.setOnClickListener {
-            if (!Settings.canDrawOverlays(this)) {
-                startActivity(
-                    Intent(
-                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                        Uri.parse("package:$packageName")
+            try {
+                if (!Settings.canDrawOverlays(this)) {
+                    startActivity(
+                        Intent(
+                            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                            Uri.parse("package:$packageName")
+                        )
                     )
-                )
-            } else {
-                requestNotificationPermissionIfNeeded()
-                startForegroundService(Intent(this, PetService::class.java))
+                } else {
+                    requestNotificationPermissionIfNeeded()
+                    startForegroundService(Intent(this, PetService::class.java))
+                }
+            } catch (e: Exception) {
+                errorText.text = "启动失败: ${e.message}"
             }
         }
 
         box.addView(startButton)
+        box.addView(errorText)
         setContentView(box)
     }
 
